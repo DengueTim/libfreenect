@@ -76,6 +76,8 @@ pthread_cond_t gl_frame_cond = PTHREAD_COND_INITIALIZER;
 int got_rgb = 0;
 int got_depth = 0;
 
+int dumpDepthFrames = 0;
+
 void DrawGLScene()
 {
 	pthread_mutex_lock(&gl_backbuf_mutex);
@@ -110,6 +112,10 @@ void DrawGLScene()
 		rgb_front = rgb_mid;
 		rgb_mid = tmp;
 		got_rgb = 0;
+		rgb_front[640 * 240 * 3 + 320 * 3] = 0xff;
+		rgb_front[640 * 240 * 3 + 321 * 3] = 0xff;
+		rgb_front[640 * 241 * 3 + 320 * 3] = 0xff;
+		rgb_front[640 * 241 * 3 + 321 * 3] = 0xff;
 	}
 
 	pthread_mutex_unlock(&gl_backbuf_mutex);
@@ -280,6 +286,9 @@ void keyPressed(unsigned char key, int x, int y)
 	        glEnable(GL_DEPTH_TEST);
 	    }
 	}
+	if (key == 'g') {
+		dumpDepthFrames = 10;
+	}
 	if (tilt_changed) {
 	    freenect_set_tilt_degs(f_dev, freenect_angle);
 	    tilt_changed = 0;
@@ -399,6 +408,11 @@ void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
 	got_depth++;
 	pthread_cond_signal(&gl_frame_cond);
 	pthread_mutex_unlock(&gl_backbuf_mutex);
+	if (dumpDepthFrames) {
+		fwrite (depth, 2, 640*480, stderr);
+		fflush(stderr);
+		dumpDepthFrames--;
+	}
 }
 
 void rgb_cb(freenect_device *dev, void *rgb, uint32_t timestamp)
@@ -497,7 +511,8 @@ int main(int argc, char **argv)
 	}
 
 	freenect_set_log_level(f_ctx, FREENECT_LOG_DEBUG);
-	freenect_select_subdevices(f_ctx, (freenect_device_flags)(FREENECT_DEVICE_MOTOR | FREENECT_DEVICE_CAMERA));
+	//freenect_select_subdevices(f_ctx, (freenect_device_flags)(FREENECT_DEVICE_MOTOR | FREENECT_DEVICE_CAMERA));
+	freenect_select_subdevices(f_ctx, (freenect_device_flags)(FREENECT_DEVICE_CAMERA));
 
 	int nr_devices = freenect_num_devices (f_ctx);
 	printf ("Number of devices found: %d\n", nr_devices);

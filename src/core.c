@@ -48,7 +48,8 @@ FREENECTAPI int freenect_init(freenect_context **ctx, freenect_usb_context *usb_
 	memset(*ctx, 0, sizeof(freenect_context));
 
 	(*ctx)->log_level = LL_WARNING;
-	(*ctx)->enabled_subdevices = (freenect_device_flags)(FREENECT_DEVICE_MOTOR | FREENECT_DEVICE_CAMERA);
+	//(*ctx)->enabled_subdevices = (freenect_device_flags)(FREENECT_DEVICE_MOTOR | FREENECT_DEVICE_CAMERA);
+	(*ctx)->enabled_subdevices = (freenect_device_flags)(FREENECT_DEVICE_CAMERA);
 	res = fnusb_init(&(*ctx)->usb, usb_ctx);
 	if (res < 0) {
 		free(*ctx);
@@ -132,7 +133,8 @@ FREENECTAPI int freenect_supported_subdevices(void)
 
 FREENECTAPI void freenect_select_subdevices(freenect_context *ctx, freenect_device_flags subdevs)
 {
-	ctx->enabled_subdevices = (freenect_device_flags)(subdevs & (FREENECT_DEVICE_MOTOR | FREENECT_DEVICE_CAMERA | FREENECT_DEVICE_AUDIO));
+	//ctx->enabled_subdevices = (freenect_device_flags)(subdevs & (FREENECT_DEVICE_MOTOR | FREENECT_DEVICE_CAMERA | FREENECT_DEVICE_AUDIO));
+	ctx->enabled_subdevices = (freenect_device_flags)(subdevs & (FREENECT_DEVICE_CAMERA));
 }
 
 FREENECTAPI freenect_device_flags freenect_enabled_subdevices(freenect_context *ctx)
